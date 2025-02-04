@@ -20,13 +20,13 @@ class Blackjack(tk.Tk):
         main_frame.pack(fill="both", expand=True)
 
         self.dealerShown_label = ttk.Label(main_frame, text="Dealer Card: ")
-        self.dealerShown_label.pack(pady=10)
+        self.dealerShown_label.pack(pady=6)
 
         self.playerShown_label = ttk.Label(main_frame, text="Player Cards: ")
         self.playerShown_label.pack(pady=2)
 
         self.totalShown_label = ttk.Label(main_frame, text="Total: ")
-        self.totalShown_label.pack(pady=2)
+        self.totalShown_label.pack(pady=5)
 
         self.win_label = ttk.Label(main_frame, text="You Win!")
         self.lose_label = ttk.Label(main_frame, text="You Lose!")
@@ -36,8 +36,14 @@ class Blackjack(tk.Tk):
         self.stand_button = ttk.Button(main_frame, text="Stand", command=self.stand)
         self.double_button = ttk.Button(main_frame, text="Double", command=self.double)
 
+        self.deposit_button = ttk.Button(main_frame, text="Deposit 100", command=self.deposit)
+        self.warning_label = ttk.Label(main_frame, text="You have no money left. Deposit to continue.")
+
         self.balance_label = ttk.Label(main_frame, text=f"Balance: {self.balance}")
-        self.balance_label.pack(pady=10)
+        self.balance_label.pack(pady=2)
+
+        self.bet_label = ttk.Label(main_frame, text=f"Bet: {self.bet}")
+        self.bet_label.pack(pady=2)
 
         self.bet_entry = ttk.Entry(main_frame)
         self.bet_entry.pack(pady=2)
@@ -46,11 +52,14 @@ class Blackjack(tk.Tk):
         self.bet_button.pack(pady=2)
 
     def betAmount(self):
+        if self.balance == 0:
+            self.warning_label.pack(pady=2)
+            return
         self.bet = int(self.bet_entry.get())
         if self.bet > self.balance:
             self.bet = self.balance
         self.balance -= self.bet
-        self.balance_label.config(text=f"Balance: {self.balance}")
+        self.updateBetBalance()
 
         self.win_label.pack_forget()
         self.lose_label.pack_forget()
@@ -59,6 +68,10 @@ class Blackjack(tk.Tk):
         self.bet_entry.pack_forget()
 
         self.dealCards()
+    
+    def updateBetBalance(self):
+        self.bet_label.config(text=f"Bet: {self.bet}")
+        self.balance_label.config(text=f"Balance: {self.balance}")
 
     def dealCards(self):
         self.cards = {"2":2, "3":3, "4":4, "5":5, "6":6, "7":7, "8":8, "9":9, "10":10, "J":10, "Q":10, "K":10, "A":11}
@@ -116,6 +129,7 @@ class Blackjack(tk.Tk):
     def double(self):
         self.balance -= self.bet
         self.bet *= 2
+        self.updateBetBalance()
         self.hit()
         self.stand()
     
@@ -136,10 +150,12 @@ class Blackjack(tk.Tk):
         self.hit_button.pack_forget()
         self.stand_button.pack_forget()
         self.double_button.pack_forget()
-        self.balance_label.config(text=f"Balance: {self.balance}")
-        self.balance_label.pack(pady=10)
+        self.updateBetBalance()
+        self.balance_label.pack(pady=5)
         self.bet_entry.pack(pady=2)
         self.bet_button.pack(pady=2)
+        if self.balance == 0:
+            self.deposit_button.pack(pady=2)
     
     def playerWin(self):
         if self.playerTotal == 21 and len(self.playerCards) == 2:
@@ -157,6 +173,12 @@ class Blackjack(tk.Tk):
         self.balance += self.bet
         self.push_label.pack(pady=2)
         self.resetGame()
+    
+    def deposit(self):
+        self.balance += 100
+        self.updateBetBalance()
+        self.deposit_button.pack_forget()
+        self.warning_label.pack_forget()
 
 def main():
     game = Blackjack()
