@@ -10,8 +10,11 @@ class BlackJack(tk.Tk):
         self.geometry("400x300")
         self.minsize(300, 200)
 
-        self.create_widgets()
+        self.balance = 100
+        self.bet = 0
 
+        self.create_widgets()
+        
     def create_widgets(self):
         main_frame = ttk.Frame(self, padding="10")
         main_frame.pack(fill="both", expand=True)
@@ -29,11 +32,27 @@ class BlackJack(tk.Tk):
         self.lose = ttk.Label(main_frame, text="You Lose!")
         self.push = ttk.Label(main_frame, text="Push!")
 
-        self.play_button = ttk.Button(main_frame, text="Play", command=self.dealCards)
-        self.play_button.pack(pady=5)
-
         self.hit_button = ttk.Button(main_frame, text="Hit", command=self.hit)
         self.stand_button = ttk.Button(main_frame, text="Stand", command=self.stand)
+
+        self.balance_label = ttk.Label(main_frame, text=f"Balance: {self.balance}")
+        self.balance_label.pack(pady=10)
+
+        self.bet_entry = ttk.Entry(main_frame)
+        self.bet_entry.pack(pady=2)
+
+        self.bet_button = ttk.Button(main_frame, text="Bet and Play", command=self.betAmount)
+        self.bet_button.pack(pady=2)
+
+    def betAmount(self):
+        self.bet = int(self.bet_entry.get())
+        if self.bet > self.balance:
+            self.bet = self.balance
+        self.balance -= self.bet
+        self.balance_label.config(text=f"Balance: {self.balance}")
+        self.bet_button.pack_forget()
+        self.bet_entry.pack_forget()
+        self.dealCards()
 
     def dealCards(self):
         self.cards = {"2":2, "3":3, "4":4, "5":5, "6":6, "7":7, "8":8, "9":9, "10":10, "J":10, "Q":10, "K":10, "A":11}
@@ -46,12 +65,15 @@ class BlackJack(tk.Tk):
         self.playerShown.config(text=f"Player Cards: {self.playerCards[0]} {self.playerCards[1]}")
         self.totalShown.config(text=f"Total: {self.playerTotal}")
 
-        self.play_button.pack_forget()
         self.hit_button.pack(pady=2)
         self.stand_button.pack(pady=2)
 
         self.win.pack_forget()
         self.lose.pack_forget()
+        self.push.pack_forget()
+
+        if self.playerTotal == 21:
+            self.stand()
     
     def calcTotal(self):
         self.playerTotal = sum([int(self.cards[card]) for card in self.playerCards])
@@ -68,8 +90,7 @@ class BlackJack(tk.Tk):
         self.calcTotal()
         self.totalShown.config(text=f"Total: {self.playerTotal}")
         if self.playerTotal > 21:
-            self.lose.pack(pady=2)
-            self.resetGame()
+            self.playerLose()
         elif self.playerTotal == 21:
             self.stand()
         
@@ -80,19 +101,36 @@ class BlackJack(tk.Tk):
             self.calcTotal()
         self.dealerShown.config(text=f"Dealer Cards: {' '.join(self.dealerCards)} ({self.dealerTotal})")
         if self.dealerTotal > 21:
-            self.win.pack(pady=2)
+            self.playerWin()
         elif self.dealerTotal > self.playerTotal:
-            self.lose.pack(pady=2)
+            self.playerLose()
         elif self.dealerTotal == self.playerTotal:
-            self.push.pack(pady=2)
+            self.playerPush()
         else:
-            self.win.pack(pady=2)
+            self.playerWin()
         self.resetGame()
     
     def resetGame(self):
         self.hit_button.pack_forget()
         self.stand_button.pack_forget()
-        self.play_button.pack(pady=5)
+        self.balance_label.config(text=f"Balance: {self.balance}")
+        self.balance_label.pack(pady=10)
+        self.bet_button.pack(pady=2)
+        self.bet_entry.pack(pady=2)
+    
+    def playerWin(self):
+        self.win.pack(pady=2)
+        self.balance += 2 * self.bet
+        self.resetGame()
+    
+    def playerLose(self):
+        self.lose.pack(pady=2)
+        self.resetGame()
+
+    def playerPush(self):
+        self.push.pack(pady=2)
+        self.balance += self.bet
+        self.resetGame()
 
 def main():
     game = BlackJack()
