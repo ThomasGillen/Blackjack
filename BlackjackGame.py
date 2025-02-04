@@ -37,7 +37,8 @@ class Blackjack(tk.Tk):
         self.double_button = ttk.Button(main_frame, text="Double", command=self.double)
 
         self.deposit_button = ttk.Button(main_frame, text="Deposit 100", command=self.deposit)
-        self.warning_label = ttk.Label(main_frame, text="You have no money left. Deposit to continue.")
+        self.balanceWarning_label = ttk.Label(main_frame, text="You have no money left. Deposit to continue.")
+        self.doubleWarning_label = ttk.Label(main_frame, text="You do not have enough money to double your bet.")
 
         self.balance_label = ttk.Label(main_frame, text=f"Balance: {self.balance}")
         self.balance_label.pack(pady=2)
@@ -53,7 +54,7 @@ class Blackjack(tk.Tk):
 
     def betAmount(self):
         if self.balance == 0:
-            self.warning_label.pack(pady=2)
+            self.balanceWarning_label.pack(pady=2)
             return
         self.bet = int(self.bet_entry.get())
         if self.bet > self.balance:
@@ -110,6 +111,7 @@ class Blackjack(tk.Tk):
         elif self.playerTotal == 21:
             self.stand()
         self.double_button.pack_forget()
+        self.doubleWarning_label.pack_forget()
         
     def stand(self):
         while self.dealerTotal < 17:
@@ -117,6 +119,7 @@ class Blackjack(tk.Tk):
             self.dealerCards.append(cardDrawn)
             self.dealerTotal += self.cards[cardDrawn]
             self.dealerAceHandler()
+        self.doubleWarning_label.pack_forget()
         if self.dealerTotal > 21:
             self.playerWin()
         elif self.dealerTotal > self.playerTotal:
@@ -127,6 +130,9 @@ class Blackjack(tk.Tk):
             self.playerWin()
         
     def double(self):
+        if self.bet > self.balance:
+            self.doubleWarning_label.pack(pady=2)
+            return
         self.balance -= self.bet
         self.bet *= 2
         self.updateBetBalance()
@@ -178,7 +184,7 @@ class Blackjack(tk.Tk):
         self.balance += 100
         self.updateBetBalance()
         self.deposit_button.pack_forget()
-        self.warning_label.pack_forget()
+        self.balanceWarning_label.pack_forget()
 
 def main():
     game = Blackjack()
