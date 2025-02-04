@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import random
 
-class BlackJack(tk.Tk):
+class Blackjack(tk.Tk):
     def __init__(self):
         super().__init__()
 
@@ -19,21 +19,22 @@ class BlackJack(tk.Tk):
         main_frame = ttk.Frame(self, padding="10")
         main_frame.pack(fill="both", expand=True)
 
-        self.dealerShown = ttk.Label(main_frame, text="Dealer Card: ")
-        self.dealerShown.pack(pady=10)
+        self.dealerShown_label = ttk.Label(main_frame, text="Dealer Card: ")
+        self.dealerShown_label.pack(pady=10)
 
-        self.playerShown = ttk.Label(main_frame, text="Player Cards: ")
-        self.playerShown.pack(pady=2)
+        self.playerShown_label = ttk.Label(main_frame, text="Player Cards: ")
+        self.playerShown_label.pack(pady=2)
 
-        self.totalShown = ttk.Label(main_frame, text="Total: ")
-        self.totalShown.pack(pady=2)
+        self.totalShown_label = ttk.Label(main_frame, text="Total: ")
+        self.totalShown_label.pack(pady=2)
 
-        self.win = ttk.Label(main_frame, text="You Win!")
-        self.lose = ttk.Label(main_frame, text="You Lose!")
-        self.push = ttk.Label(main_frame, text="Push!")
+        self.win_label = ttk.Label(main_frame, text="You Win!")
+        self.lose_label = ttk.Label(main_frame, text="You Lose!")
+        self.push_label = ttk.Label(main_frame, text="Push!")
 
         self.hit_button = ttk.Button(main_frame, text="Hit", command=self.hit)
         self.stand_button = ttk.Button(main_frame, text="Stand", command=self.stand)
+        self.double_button = ttk.Button(main_frame, text="Double", command=self.double)
 
         self.balance_label = ttk.Label(main_frame, text=f"Balance: {self.balance}")
         self.balance_label.pack(pady=10)
@@ -51,9 +52,9 @@ class BlackJack(tk.Tk):
         self.balance -= self.bet
         self.balance_label.config(text=f"Balance: {self.balance}")
 
-        self.win.pack_forget()
-        self.lose.pack_forget()
-        self.push.pack_forget()
+        self.win_label.pack_forget()
+        self.lose_label.pack_forget()
+        self.push_label.pack_forget()
         self.bet_button.pack_forget()
         self.bet_entry.pack_forget()
 
@@ -61,7 +62,7 @@ class BlackJack(tk.Tk):
 
     def dealCards(self):
         self.cards = {"2":2, "3":3, "4":4, "5":5, "6":6, "7":7, "8":8, "9":9, "10":10, "J":10, "Q":10, "K":10, "A":11}
-        self.dealerCards = [random.choice(list(self.cards.keys()))] 
+        self.dealerCards = [random.choice(list(self.cards.keys())), random.choice(list(self.cards.keys()))] 
         self.playerCards = [random.choice(list(self.cards.keys())), random.choice(list(self.cards.keys()))]
         self.playerTotal = sum([int(self.cards[card]) for card in self.playerCards])
         self.dealerTotal = sum([int(self.cards[card]) for card in self.dealerCards])
@@ -71,12 +72,13 @@ class BlackJack(tk.Tk):
         self.playerAceHandler()
         self.dealerAceHandler()
 
-        self.dealerShown.config(text=f"Dealer Card: {self.dealerCards[0]}")
-        self.playerShown.config(text=f"Player Cards: {self.playerCards[0]} {self.playerCards[1]}")
-        self.totalShown.config(text=f"Total: {self.playerTotal}")
+        self.dealerShown_label.config(text=f"Dealer Card: {self.dealerCards[0]}")
+        self.playerShown_label.config(text=f"Player Cards: {self.playerCards[0]} {self.playerCards[1]}")
+        self.totalShown_label.config(text=f"Total: {self.playerTotal}")
 
         self.hit_button.pack(pady=2)
         self.stand_button.pack(pady=2)
+        self.double_button.pack(pady=2)
 
         if self.playerTotal == 21 and self.dealerTotal != 21:
             self.playerWin()
@@ -88,12 +90,13 @@ class BlackJack(tk.Tk):
         self.playerCards.append(cardDrawn)
         self.playerTotal += self.cards[cardDrawn]
         self.playerAceHandler()
-        self.playerShown.config(text=f"Player Cards: {' '.join(self.playerCards)}")
-        self.totalShown.config(text=f"Total: {self.playerTotal}")
+        self.playerShown_label.config(text=f"Player Cards: {' '.join(self.playerCards)}")
+        self.totalShown_label.config(text=f"Total: {self.playerTotal}")
         if self.playerTotal > 21:
             self.playerLose()
         elif self.playerTotal == 21:
             self.stand()
+        self.double_button.pack_forget()
         
     def stand(self):
         while self.dealerTotal < 17:
@@ -101,7 +104,6 @@ class BlackJack(tk.Tk):
             self.dealerCards.append(cardDrawn)
             self.dealerTotal += self.cards[cardDrawn]
             self.dealerAceHandler()
-        self.dealerShown.config(text=f"Dealer Cards: {' '.join(self.dealerCards)} ({self.dealerTotal})")
         if self.dealerTotal > 21:
             self.playerWin()
         elif self.dealerTotal > self.playerTotal:
@@ -110,22 +112,30 @@ class BlackJack(tk.Tk):
             self.playerPush()
         else:
             self.playerWin()
+        
+    def double(self):
+        self.balance -= self.bet
+        self.bet *= 2
+        self.hit()
+        self.stand()
     
     def playerAceHandler(self):
         if self.playerTotal > 21 and self.checkedPlayerAces < self.playerCards.count("A"):
             self.playerTotal -= 10
             self.checkedPlayerAces += 1
-            self.totalShown.config(text=f"Total: {self.playerTotal}")
+            self.totalShown_label.config(text=f"Total: {self.playerTotal}")
     
     def dealerAceHandler(self):
         if self.dealerTotal > 21 and self.checkedDealerAces < self.dealerCards.count("A"):
             self.dealerTotal -= 10
             self.checkedDealerAces += 1
-            self.totalShown.config(text=f"Total: {self.dealerTotal}")
+            self.totalShown_label.config(text=f"Total: {self.dealerTotal}")
 
     def resetGame(self):
+        self.dealerShown_label.config(text=f"Dealer Cards: {' '.join(self.dealerCards)} ({self.dealerTotal})")
         self.hit_button.pack_forget()
         self.stand_button.pack_forget()
+        self.double_button.pack_forget()
         self.balance_label.config(text=f"Balance: {self.balance}")
         self.balance_label.pack(pady=10)
         self.bet_entry.pack(pady=2)
@@ -136,20 +146,20 @@ class BlackJack(tk.Tk):
             self.balance += int(2.5 * self.bet)
         else:
             self.balance += 2 * self.bet
-        self.win.pack(pady=2)
+        self.win_label.pack(pady=2)
         self.resetGame()
     
     def playerLose(self):
-        self.lose.pack(pady=2)
+        self.lose_label.pack(pady=2)
         self.resetGame()
 
     def playerPush(self):
         self.balance += self.bet
-        self.push.pack(pady=2)
+        self.push_label.pack(pady=2)
         self.resetGame()
 
 def main():
-    game = BlackJack()
+    game = Blackjack()
     game.mainloop()
 
 if __name__ == "__main__":
