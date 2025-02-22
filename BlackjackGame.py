@@ -98,6 +98,8 @@ class Blackjack(tk.Tk):
             self.playerWin()
         elif self.dealerTotal == 21 and self.playerTotal != 21:
             self.playerLose()
+        elif self.playerTotal == 21 and self.dealerTotal == 21:
+            self.playerPush()
 
     def hit(self):
         cardDrawn = random.choice(list(self.cards.keys()))
@@ -157,6 +159,7 @@ class Blackjack(tk.Tk):
         self.stand_button.pack_forget()
         self.double_button.pack_forget()
         self.updateBetBalance()
+        self.bet = 0
         self.balance_label.pack(pady=5)
         self.bet_entry.pack(pady=2)
         self.bet_button.pack(pady=2)
