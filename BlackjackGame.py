@@ -78,13 +78,8 @@ class Blackjack(tk.Tk):
         self.cards = {"2":2, "3":3, "4":4, "5":5, "6":6, "7":7, "8":8, "9":9, "10":10, "J":10, "Q":10, "K":10, "A":11}
         self.dealerCards = [random.choice(list(self.cards.keys())), random.choice(list(self.cards.keys()))] 
         self.playerCards = [random.choice(list(self.cards.keys())), random.choice(list(self.cards.keys()))]
-        self.playerTotal = sum([int(self.cards[card]) for card in self.playerCards])
-        self.dealerTotal = sum([int(self.cards[card]) for card in self.dealerCards])
-
-        self.checkedPlayerAces = 0
-        self.checkedDealerAces = 0
-        self.playerAceHandler()
-        self.dealerAceHandler()
+        self.playerTotal = self.calculateHandTotal(self.playerCards)
+        self.dealerTotal = self.calculateHandTotal(self.dealerCards)
 
         self.dealerShown_label.config(text=f"Dealer Card: {self.dealerCards[0]}")
         self.playerShown_label.config(text=f"Player Cards: {self.playerCards[0]} {self.playerCards[1]}")
@@ -104,8 +99,7 @@ class Blackjack(tk.Tk):
     def hit(self):
         cardDrawn = random.choice(list(self.cards.keys()))
         self.playerCards.append(cardDrawn)
-        self.playerTotal += self.cards[cardDrawn]
-        self.playerAceHandler()
+        self.playerTotal = self.calculateHandTotal(self.playerCards)
         self.playerShown_label.config(text=f"Player Cards: {' '.join(self.playerCards)}")
         self.totalShown_label.config(text=f"Total: {self.playerTotal}")
         if self.playerTotal > 21:
@@ -119,8 +113,7 @@ class Blackjack(tk.Tk):
         while self.dealerTotal < 17:
             cardDrawn = random.choice(list(self.cards.keys()))
             self.dealerCards.append(cardDrawn)
-            self.dealerTotal += self.cards[cardDrawn]
-            self.dealerAceHandler()
+            self.dealerTotal = self.calculateHandTotal(self.dealerCards)
         self.doubleWarning_label.pack_forget()
         if self.dealerTotal > 21:
             self.playerWin()
@@ -141,17 +134,15 @@ class Blackjack(tk.Tk):
         self.hit()
         self.stand()
     
-    def playerAceHandler(self):
-        if self.playerTotal > 21 and self.checkedPlayerAces < self.playerCards.count("A"):
-            self.playerTotal -= 10
-            self.checkedPlayerAces += 1
-            self.totalShown_label.config(text=f"Total: {self.playerTotal}")
-    
-    def dealerAceHandler(self):
-        if self.dealerTotal > 21 and self.checkedDealerAces < self.dealerCards.count("A"):
-            self.dealerTotal -= 10
-            self.checkedDealerAces += 1
-            self.totalShown_label.config(text=f"Total: {self.dealerTotal}")
+    def calculateHandTotal(self, hand):
+        total = sum(self.cards[card] for card in hand)
+        aces = hand.count("A")
+
+        while total > 21 and aces > 0:
+            total -= 10
+            aces -= 1
+
+        return total
 
     def resetGame(self):
         self.dealerShown_label.config(text=f"Dealer Cards: {' '.join(self.dealerCards)} ({self.dealerTotal})")
